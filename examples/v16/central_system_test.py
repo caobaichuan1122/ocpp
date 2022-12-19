@@ -310,9 +310,10 @@ async def on_connect(websocket, path,csms):
         return await websocket.close()
 
     charge_point_id = path.strip('/')
+    print(charge_point_id)
     try:
         #for change_Availablity
-        if charge_point_id =='CP_3':
+        if charge_point_id =='CP_1':
 
             current_connected_chargepoints[path] = websocket
 
@@ -377,6 +378,34 @@ async def on_connect(websocket, path,csms):
 
     except:
         pass
+
+# async def on_connect(websocket, path):
+#     """ For every new charge point that connects, create a ChargePoint
+#     instance and start listening for messages.
+#     """
+#     try:
+#         requested_protocols = websocket.request_headers[
+#             'Sec-WebSocket-Protocol']
+#     except KeyError:
+#         logging.error(
+#             "Client hasn't requested any Subprotocol. Closing Connection"
+#         )
+#         return await websocket.close()
+#     if websocket.subprotocol:
+#         logging.info("Protocols Matched: %s", websocket.subprotocol)
+#     else:
+#         # In the websockets lib if no subprotocols are supported by the
+#         # client and the server, it proceeds without a subprotocol,
+#         # so we have to manually close the connection.
+#         logging.warning('Protocols Mismatched | Expected Subprotocols: %s,'
+#                         ' but client supports  %s | Closing connection',
+#                         websocket.available_subprotocols,
+#                         requested_protocols)
+#         return await websocket.close()
+#
+#     charge_point_id = path.strip('/')
+#     cp = ChargePoint(charge_point_id, websocket)
+#     await cp.start()
 
 
 async def create_websocket_server(csms: CentralSystem):
