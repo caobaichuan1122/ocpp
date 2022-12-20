@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from datetime import datetime
-from random import random
+import random
 
 from enums import OcppMisc as oc
 from enums import ConfigurationKey as ck
@@ -28,9 +28,15 @@ logging.basicConfig(level=logging.INFO)
 
 class ChargePoint(cp):
 
+    @on(Action.StatusNotification)
+    async def on_status(self,connector_id,error_code,status,**kwargs):
+
+        print(status)
+        return call_result.StatusNotificationPayload()
+
     @on(Action.Authorize)
     async def on_auth(self,id_tag,**kwargs):
-        if id_tag == "2000202204111389":
+        if id_tag == "2000202204111389" or '69fc4845':
             print("authorized")
             return call_result.AuthorizePayload(
                 id_tag_info={oc.status.value: AuthorizationStatus.accepted.value}
@@ -65,24 +71,12 @@ class ChargePoint(cp):
 
     @on(Action.MeterValues)
     def on_meter_values(self, meter_value,connector_id,**kwargs):
+        print('------------------')
+        print(meter_value)
+        print('------------------')
         metervalues = call_result.MeterValuesPayload()
-        # print('------------------')
-        # print(metervalues)
-        # print('------------------')
         return metervalues
 
-    @on(Action.StatusNotification)
-    def on_status_notification(self, connector_id, error_code, status, timestamp, info, vendor_id, vendor_error_code):
-        statusnotification = call_result.StatusNotificationPayload(
-            connector_id=connector_id,
-            errorCode=error_code,
-            status=status,
-            timestamp=timestamp,
-            info=info,
-            vendor_id=vendor_id,
-            vendor_error_code=vendor_error_code
-        )
-        return statusnotification
 
     @on(Action.GetConfiguration)
     def on_get_configuration(self,configuration_key,unknown_key,**kwargs):
@@ -115,39 +109,26 @@ class ChargePoint(cp):
         )
         return ondatatransfer
 
+
     @on(Action.StartTransaction)
-    def on_start_transaction(self, transaction_id,connector_id, id_tag, meter_start, timestamp, reservaltion_id, **kwargs):
-        onstarttransaction =  call_result.StartTransactionPayload(
-                transaction_id=random.randint(122, 6666666666),
-                # transaction_id=transaction_id,
-                connector_id =connector_id,
-                timestamp = timestamp,
-                # reservaltion_id = reservaltion_id,
-                id_tag_info={oc.status.value: AuthorizationStatus.accepted.value}
-        )
+    async def on_startTX(self, id_tag, connector_id, meter_start, timestamp, **kwargs):
+
         print("session for user", id_tag)
         print("valid transaction for connector, ", connector_id)
         print("meter value at start of transaction ", meter_start)
-        return onstarttransaction
+        return call_result.StartTransactionPayload(
+        transaction_id=random.randint(122, 6666666666),
+
+        id_tag_info={oc.status.value: AuthorizationStatus.accepted.value}
+            )
 
     @on(Action.StopTransaction)
     async def on_stopTX(self,meter_stop,timestamp,transaction_id, **kwargs):
         print("Transaction stopped at value", meter_stop, " for transaction id", transaction_id,"at", timestamp)
         onstoptransaction = call_result.StopTransactionPayload(
-
+            None
         )
         return onstoptransaction
-
-    # @on(Action.StartTransaction)
-    # async def on_startTX(self, id_tag, connector_id, meter_start, timestamp, **kwargs):
-    #
-    #     print("session for user", id_tag)
-    #     print("valid transaction for connector, ", connector_id)
-    #     print("meter value at start of transaction ", meter_start)
-    #     return call_result.StartTransactionPayload(
-    #     transaction_id=random.randint(122, 6666666666),
-    #     id_tag_info={oc.status.value: AuthorizationStatus.accepted.value}
-    #         )
 
 
     def on_remote_start_transaction(self,  id_tag: str,**kwargs):
