@@ -116,13 +116,13 @@ class ChargePoint(cp):
         return ondatatransfer
 
     @on(Action.StartTransaction)
-    def on_start_transaction(self, transactionid,connector_id, id_tag, meter_start, timestamp, reservaltion_id, **kwargs):
+    def on_start_transaction(self, transaction_id,connector_id, id_tag, meter_start, timestamp, reservaltion_id, **kwargs):
         onstarttransaction =  call_result.StartTransactionPayload(
-                # transaction_id=random.randint(122, 6666666666),
-                transaction_id=transactionid,
+                transaction_id=random.randint(122, 6666666666),
+                # transaction_id=transaction_id,
                 connector_id =connector_id,
                 timestamp = timestamp,
-                reservaltion_id = reservaltion_id,
+                # reservaltion_id = reservaltion_id,
                 id_tag_info={oc.status.value: AuthorizationStatus.accepted.value}
         )
         print("session for user", id_tag)
