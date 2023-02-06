@@ -36,7 +36,7 @@ class ChargePoint(cp):
 
     @on(Action.Authorize)
     async def on_auth(self,id_tag,**kwargs):
-        if id_tag == "2000202204111389" or '69fc4845':
+        if id_tag == id_tag:
             print("authorized")
             return call_result.AuthorizePayload(
                 id_tag_info={oc.status.value: AuthorizationStatus.accepted.value}
@@ -71,7 +71,7 @@ class ChargePoint(cp):
 
     @on(Action.MeterValues)
     def on_meter_values(self, meter_value,connector_id,**kwargs):
-        print('------------------')
+        # print('------------------')
         print(meter_value)
         print('------------------')
         metervalues = call_result.MeterValuesPayload()
