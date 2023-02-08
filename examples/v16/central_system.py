@@ -31,7 +31,7 @@ class ChargePoint(cp):
     @on(Action.StatusNotification)
     async def on_status(self,connector_id,error_code,status,**kwargs):
 
-        print(status)
+        print(connector_id,error_code,status,)
         return call_result.StatusNotificationPayload()
 
     @on(Action.Authorize)
