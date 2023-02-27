@@ -9,14 +9,14 @@ async def send_request(websocket, request):
     return response
 
 async def remote_start_transaction(websocket, id_tag, connector_id=None, charging_profile=None):
-    request_id = 1
+    request_id = 2
     request_payload = {
         "idTag": id_tag
     }
     if connector_id is not None:
         request_payload["connectorId"] = connector_id
     if charging_profile is not None:
-        request_payload["chargingProfile"] = [2,{
+        request_payload["chargingProfile"] = {
             "chargingProfileId": 1,
             "transactionId": 0,
             "chargingProfileKind": "Absolute",
@@ -24,12 +24,12 @@ async def remote_start_transaction(websocket, id_tag, connector_id=None, chargin
                 "chargingRateUnit": "A",
                 "chargingSchedulePeriod": charging_profile
             }
-        }]
-    request = {
-        "messageTypeId": "RemoteStartTransaction",
-        "id": str(request_id),
+        }
+    request = [{
+        "MessageTypeId": "RemoteStartTransaction",
+        "connectorId": str(request_id),
         "data": request_payload
-    }
+    }]
     request_str = json.dumps(request)
     response = await send_request(websocket, request_str.encode())
     response_id, status, _ = response.values()
