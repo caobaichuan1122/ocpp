@@ -192,7 +192,14 @@ async def on_connect(websocket, path):
 
     charge_point_id = path.strip('/')
     cp = ChargePoint(charge_point_id, websocket)
+    try:
+        await asyncio.gather(cp.start(), cp.remote_start_transaction())
+    except websockets.exceptions.ConnectionClosed:
+        connected.remove(websocket)
+        print("Charge Point disconnected")
     await cp.start()
+
+
 
 
 

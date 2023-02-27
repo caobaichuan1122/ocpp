@@ -26,12 +26,12 @@ async def remote_start_transaction(websocket, id_tag, connector_id=None, chargin
             }
         }
     request = [{
-        "MessageTypeId": "RemoteStartTransaction",
+        "messageId": "RemoteStartTransaction",
         "connectorId": str(request_id),
         "data": request_payload
     }]
     request_str = json.dumps(request)
-    response = await send_request(websocket, request_str.encode())
+    response = await send_request(websocket, request_str)
     response_id, status, _ = response.values()
     if response_id == request_id and status == "Accepted":
         return True
