@@ -126,7 +126,8 @@ class ChargePoint(cp):
     async def on_stopTX(self,meter_stop,timestamp,transaction_id, **kwargs):
         print("Transaction stopped at value", meter_stop, " for transaction id", transaction_id,"at", timestamp)
         onstoptransaction = call_result.StopTransactionPayload(
-            None
+            transaction_id=transaction_id,
+            id_tag_info={oc.status.value: AuthorizationStatus.accepted.value}
         )
         return onstoptransaction
 
