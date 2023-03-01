@@ -41,7 +41,9 @@ class ChargePoint(cp):
 
     @on(Action.MeterValues)
     async def on_meter(self,meter_value,connector_id,**kwargs):
+        print('------------------')
         print(meter_value)
+        print('------------------')
         return call_result.MeterValuesPayload()
 
     @on(Action.Authorize)
@@ -313,7 +315,7 @@ async def on_connect(websocket, path,csms):
     print(charge_point_id)
     try:
         #for change_Availablity
-        if charge_point_id =='CP_1':
+        if charge_point_id =='TA2200001':
 
             current_connected_chargepoints[path] = websocket
 
