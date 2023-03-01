@@ -1,7 +1,7 @@
 import asyncio
 import logging
 import websockets
-from datetime import datetime,timedelta
+from datetime import datetime, timedelta, timezone
 import random
 from functools import partial
 from aiohttp import web
@@ -75,7 +75,8 @@ class ChargePoint(cp):
         print("meter value at start of transaction ", meter_start)
         return call_result.StartTransactionPayload(
         transaction_id=random.randint(122, 6666666666),
-        id_tag_info={oc.status.value: AuthorizationStatus.accepted.value}
+        id_tag_info={oc.status.value: AuthorizationStatus.accepted.value},
+        timestamp = datetime.now(timezone.utc).isoformat()
             )
 
 
@@ -274,6 +275,15 @@ async def remote_start(request):
     csms = request.app["csms"]
 
     await csms.remote_start_transaction(data["id_tag"])
+
+    return web.Response()
+
+async def remote_stop(request):
+    """ HTTP handler for remote starting a chargepoint. """
+    data = await request.json()
+    csms = request.app["csms"]
+
+    await csms.remote_stop_transaction(data["id_tag"])
 
     return web.Response()
 
