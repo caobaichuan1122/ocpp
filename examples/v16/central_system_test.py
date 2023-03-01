@@ -41,14 +41,13 @@ class ChargePoint(cp):
 
     @on(Action.MeterValues)
     async def on_meter(self,meter_value,connector_id,**kwargs):
-        print('------------------')
         print(meter_value)
-        print('------------------')
+        print('----------------')
         return call_result.MeterValuesPayload()
 
     @on(Action.Authorize)
     async def on_auth(self,id_tag,**kwargs):
-        if id_tag == "test_cp2" or id_tag == "test_cp5":
+        if id_tag == id_tag:
             print("authorized")
             return call_result.AuthorizePayload(
                 id_tag_info={oc.status.value: AuthorizationStatus.accepted.value}
@@ -316,10 +315,7 @@ async def on_connect(websocket, path,csms):
     try:
         #for change_Availablity
         if charge_point_id =='TA2200001':
-
             current_connected_chargepoints[path] = websocket
-
-
             connected_chargepoint.append(charge_point_id)
             print("Valid Chargepoint")
             cp = ChargePoint(charge_point_id, websocket)
@@ -328,7 +324,7 @@ async def on_connect(websocket, path,csms):
             await asyncio.gather(cp.start(),cp.change_availability())
 
         # for remote start
-        elif charge_point_id == 'CP_4':
+        elif charge_point_id == 'TA2200001':
             current_connected_chargepoints[path] = websocket
             connected_chargepoint.append(charge_point_id)
             print("Valid Chargepoint")
