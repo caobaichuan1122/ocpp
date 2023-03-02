@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import pymysql
 import websockets
 from datetime import datetime, timedelta, timezone
 import random
@@ -18,8 +19,11 @@ from enums import ConfigurationKey as ck
 from ocpp.v16 import call_result,call
 
 
-
-
+#
+db = pymysql.connect(host='49.176.154.111',
+                     user='root',
+                     password='Pass.crrc.2019',
+                     database='google')
 reserved_ID=[]
 current_connected_chargepoints={}
 connected_chargepoint = []
@@ -41,8 +45,16 @@ class ChargePoint(cp):
 
     @on(Action.MeterValues)
     async def on_meter(self,meter_value,connector_id,**kwargs):
-        print(meter_value)
+        # db = pymysql.connect(host='49.176.154.111',
+        #                      user='root',
+        #                      password='Pass.crrc.2019',
+        #                      database='google')
+        # print(meter_value)
+        c = db.cursor()
+        sql = "INSERT INTO dict (dict) VALUES (%s)"
+        c.execute(sql,str(meter_value))
         print('----------------')
+        db.commit()
         return call_result.MeterValuesPayload()
 
     @on(Action.Authorize)
@@ -123,7 +135,7 @@ class ChargePoint(cp):
     async def on_stopTX(self,meter_stop,timestamp,transaction_id, **kwargs):
         print("Transaction stopped at value", meter_stop, " for transaction id", transaction_id,"at", timestamp)
         return call_result.StopTransactionPayload(
-            None
+            transaction_id = transaction_id
         )
 
     @on(Action.Heartbeat)
@@ -162,11 +174,11 @@ class ChargePoint(cp):
 
 #1438214900280  device id
 
-    async def remote_stop_transaction(self):
+    async def remote_stop_transaction(self,transaction_id):
 
         await asyncio.sleep(10)
         request = call.RemoteStopTransactionPayload(
-            transaction_id=11
+            transaction_id=transaction_id
         )
         response = await self.call(request)
         if response.status == RemoteStartStopStatus.accepted:
