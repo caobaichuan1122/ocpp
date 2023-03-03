@@ -138,11 +138,11 @@ class ChargePoint(cp):
     #         id_tag = id_tag
     #     )
     #     return remotestarttransaction
+    @on(Action.RemoteStartTransaction)
     async def remote_start_transaction(self, id_tag: str):
-        return await self.call(call.RemoteStartTransactionPayload( id_tag=id_tag))
+        return await self.call(call.RemoteStartTransactionPayload( id_tag='2000202204111389'))
 
-
-
+    @on(Action.RemoteStopTransaction)
     def on_remote_stop_transaction(self,id_tag: str, **kwargs):
         remotestoptransaction = call_result.RemoteStopTransactionPayload(
             status = RemoteStartStopStatus.accepted,

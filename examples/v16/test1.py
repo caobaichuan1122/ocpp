@@ -54,15 +54,19 @@ import websockets
 async def send_call():
     async with websockets.connect('ws://tpterp.com:9000/TA2200001', subprotocols=["ocpp1.6"]) as websocket:
 
-        request = [2,'','StartTransaction',{
-            'connectorId':1,
-            'idTag':'2000202204111389',
-            'meterStart':0,
-            'timestamp':datetime.now(timezone.utc).isoformat()
-            # "transactionId": 106497,
+        # request = [2,'','StartTransaction',{
+        #     'connectorId':1,
+        #     'idTag':'2000202204111389',
+        #     'meterStart':0,
+        #     'timestamp':datetime.now(timezone.utc).isoformat()
+        #     # "transactionId": 106497,
+        #     }]
+
+        request = [2,'TA2200001','RemoteStartTransaction',{
+            'idTag':'2000202204111389'
             }]
 
-
+        # call.RemoteStartTransactionPayload(id_tag='2000202204111389')
 
         message = json.dumps(request)
         await websocket.send(message)

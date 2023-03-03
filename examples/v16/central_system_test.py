@@ -55,7 +55,7 @@ class ChargePoint(cp):
 
     @on(Action.Authorize)
     async def on_auth(self,id_tag,**kwargs):
-        if id_tag == id_tag:
+        if id_tag == '2000202204111389':
             print("authorized")
             return call_result.AuthorizePayload(
                 id_tag_info={oc.status.value: AuthorizationStatus.accepted.value}
@@ -131,7 +131,8 @@ class ChargePoint(cp):
     async def on_stopTX(self,meter_stop,timestamp,transaction_id, **kwargs):
         print("Transaction stopped at value", meter_stop, " for transaction id", transaction_id,"at", timestamp)
         return call_result.StopTransactionPayload(
-            transaction_id = transaction_id
+            transaction_id = transaction_id,
+            id_tag_info={oc.status.value: AuthorizationStatus.accepted.value}
         )
 
     @on(Action.Heartbeat)
@@ -146,7 +147,7 @@ class ChargePoint(cp):
 
     @on(Action.RemoteStartTransaction)
     async def remote_start_transaction(self, id_tag: str):
-        return await self.call(call.RemoteStartTransactionPayload( id_tag=id_tag))
+        return await self.call(call.RemoteStartTransactionPayload( id_tag='2000202204111389'))
 
     # 1438214900280  device id
     @on(Action.RemoteStopTransaction)
@@ -228,7 +229,7 @@ class ChargePoint(cp):
 
     async def change_availability(self):
         request = call.ChangeAvailabilityPayload(
-            connector_id=1,type=AvailabilityType.inoperative
+            connector_id=1,type=AvailabilityType.operative
         )
         response = await self.call(request)
         if response.status == AvailabilityStatus.accepted:
@@ -330,7 +331,7 @@ async def on_connect(websocket, path,csms):
     print(charge_point_id)
     try:
         #for change_Availablity
-        if charge_point_id =='TA2200001':
+        if charge_point_id =='TA2200001' or 'testCCSII30SCTEST':
             current_connected_chargepoints[path] = websocket
             connected_chargepoint.append(charge_point_id)
             print("Valid Chargepoint")
@@ -340,7 +341,7 @@ async def on_connect(websocket, path,csms):
             await asyncio.gather(cp.start(),cp.change_availability())
 
         # for remote start
-        elif charge_point_id == 'TA2200001':
+        elif charge_point_id == 'TA2200001' or 'testCCSII30SCTEST':
             current_connected_chargepoints[path] = websocket
             connected_chargepoint.append(charge_point_id)
             print("Valid Chargepoint")
@@ -352,7 +353,7 @@ async def on_connect(websocket, path,csms):
 
 
 
-        elif charge_point_id == 'TA2200001':
+        elif charge_point_id == 'TA2200001' or 'testCCSII30SCTEST':
 
             print("Valid Chargepoint")
 
@@ -363,7 +364,7 @@ async def on_connect(websocket, path,csms):
             await queue.get()
 
         # for start transaction
-        elif charge_point_id == 'TA2200001':
+        elif charge_point_id == 'TA2200001' or 'testCCSII30SCTEST':
             current_connected_chargepoints[path] = websocket
             print("Valid Chargepoint")
             print(current_connected_chargepoints)
@@ -375,7 +376,7 @@ async def on_connect(websocket, path,csms):
 
 
         # for reserve
-        elif charge_point_id == 'TA2200001':
+        elif charge_point_id == 'TA2200001' or 'testCCSII30SCTEST':
             current_connected_chargepoints[path] = websocket
 
             connected_chargepoint.append(charge_point_id)
