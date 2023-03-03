@@ -45,28 +45,28 @@
 # asyncio.run(authenticate_and_send_remote_start())
 #
 
-# import asyncio
-# import websockets
-# import json
-#
-# async def connect_to_charger():
-#     async with websockets.connect('ws://tpterp.com:9000/TA2200001', subprotocols=["ocpp1.6"]) as websocket:
-#         request = [
-#              2,
-#             "123",
-#             "BootNotification",
-#             {"chargeBoxSerialNumber":"","chargePointModel":"mokuai",
-#              "chargePointSerialNumber":"TA2200001","chargePointVendor":"clou5899",
-#              "firmwareVersion":"2078","iccid":"","imsi":"","meterSerialNumber":"","meterType":""
-#             }
-#         ]
-#         await websocket.send(json.dumps(request))
-#         response = await websocket.recv()
-#         print(response)
-#
-# asyncio.get_event_loop().run_until_complete(connect_to_charger())
+import asyncio
+import json
+from datetime import datetime, timezone
+
+import websockets
+
+async def send_call():
+    async with websockets.connect('ws://tpterp.com:9000/TA2200001', subprotocols=["ocpp1.6"]) as websocket:
+
+        request = [2,'','RemoteStartTransaction',{
+            'idTag':'2000202204111389',
+            # "transactionId": 106497,
+            }]
 
 
 
+        message = json.dumps(request)
+        await websocket.send(message)
 
+        # 等待服务器响应并打印响应消息
+        response = await websocket.recv()
+        print(response)
 
+# 运行send_call函数
+asyncio.run(send_call())

@@ -45,14 +45,10 @@ class ChargePoint(cp):
 
     @on(Action.MeterValues)
     async def on_meter(self,meter_value,connector_id,**kwargs):
-        # db = pymysql.connect(host='49.176.154.111',
-        #                      user='root',
-        #                      password='Pass.crrc.2019',
-        #                      database='google')
-        # print(meter_value)
-        c = db.cursor()
-        sql = "INSERT INTO dict (dict) VALUES (%s)"
-        c.execute(sql,str(meter_value))
+        #save to DB
+        # c = db.cursor()
+        # sql = "INSERT INTO dict (dict) VALUES (%s)"
+        # c.execute(sql,str(meter_value))
         print('----------------')
         db.commit()
         return call_result.MeterValuesPayload()
@@ -148,9 +144,20 @@ class ChargePoint(cp):
         firm=call.UpdateFirmwarePayload(location="URL-FOR-FIRMWARE-DOWNLOAD", retrieve_date = datetime.utcfromtimestamp(1639056285).isoformat())
         rrr=await self.call(firm)
 
+    @on(Action.RemoteStartTransaction)
     async def remote_start_transaction(self, id_tag: str):
         return await self.call(call.RemoteStartTransactionPayload( id_tag=id_tag))
 
+    # 1438214900280  device id
+    @on(Action.RemoteStopTransaction)
+    async def remote_stop_transaction(self, transaction_id):
+        await asyncio.sleep(10)
+        request = call.RemoteStopTransactionPayload(
+            transaction_id=transaction_id
+        )
+        response = await self.call(request)
+        if response.status == RemoteStartStopStatus.accepted:
+            print("Transaction Stopped!!! remotely with authentication")
 
     async def setChargingProfile(self):
         req = call.SetChargingProfilePayload(
@@ -171,18 +178,6 @@ class ChargePoint(cp):
         response = await self.call(req)
         if response.status == ChargingProfileStatus.accepted:
             print("Charge profile accepted")
-
-#1438214900280  device id
-
-    async def remote_stop_transaction(self,transaction_id):
-
-        await asyncio.sleep(10)
-        request = call.RemoteStopTransactionPayload(
-            transaction_id=transaction_id
-        )
-        response = await self.call(request)
-        if response.status == RemoteStartStopStatus.accepted:
-            print("Transaction Stopped!!! remotely with authentication")
 
 
     async def remote_trigger(self):
@@ -273,7 +268,6 @@ class CentralSystem:
             del self._chargers[cp]
                 # This will unblock the `on_connect()` handler and the connection                # will be destroyed.
             await queue.put(True)
-
 
     async def remote_start_transaction(self, id_tag: str):
         for cp, task in self._chargers.items():
@@ -445,7 +439,7 @@ async def create_http_server(csms: CentralSystem):
     runner = web.AppRunner(app)
     await runner.setup()
 
-    site = web.TCPSite(runner, "localhost", 8082)
+    site = web.TCPSite(runner, "54.151.125.63", 8082)
     return site
 
 
