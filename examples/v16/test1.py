@@ -54,8 +54,11 @@ import websockets
 async def send_call():
     async with websockets.connect('ws://tpterp.com:9000/TA2200001', subprotocols=["ocpp1.6"]) as websocket:
 
-        request = [2,'','RemoteStartTransaction',{
+        request = [2,'','StartTransaction',{
+            'connectorId':1,
             'idTag':'2000202204111389',
+            'meterStart':0,
+            'timestamp':datetime.now(timezone.utc).isoformat()
             # "transactionId": 106497,
             }]
 
@@ -64,9 +67,9 @@ async def send_call():
         message = json.dumps(request)
         await websocket.send(message)
 
-        # 等待服务器响应并打印响应消息
+
         response = await websocket.recv()
         print(response)
 
-# 运行send_call函数
+
 asyncio.run(send_call())

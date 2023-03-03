@@ -84,7 +84,7 @@ class ChargePoint(cp):
         return call_result.StartTransactionPayload(
         transaction_id=random.randint(122, 6666666666),
         id_tag_info={oc.status.value: AuthorizationStatus.accepted.value},
-        timestamp = datetime.now(timezone.utc).isoformat()
+        # timestamp = datetime.now(timezone.utc).isoformat()
             )
 
 
@@ -271,7 +271,7 @@ class CentralSystem:
 
     async def remote_start_transaction(self, id_tag: str):
         for cp, task in self._chargers.items():
-            if cp.id == id_tag:
+            if cp.id == 'TA2200001':
                 await cp.remote_start_transaction(id_tag)
 
 
@@ -352,7 +352,7 @@ async def on_connect(websocket, path,csms):
 
 
 
-        elif charge_point_id == 'CP_7':
+        elif charge_point_id == 'TA2200001':
 
             print("Valid Chargepoint")
 
@@ -363,7 +363,7 @@ async def on_connect(websocket, path,csms):
             await queue.get()
 
         # for start transaction
-        elif charge_point_id == 'CP_6':
+        elif charge_point_id == 'TA2200001':
             current_connected_chargepoints[path] = websocket
             print("Valid Chargepoint")
             print(current_connected_chargepoints)
@@ -375,7 +375,7 @@ async def on_connect(websocket, path,csms):
 
 
         # for reserve
-        elif charge_point_id == 'CP_5':
+        elif charge_point_id == 'TA2200001':
             current_connected_chargepoints[path] = websocket
 
             connected_chargepoint.append(charge_point_id)
@@ -439,7 +439,7 @@ async def create_http_server(csms: CentralSystem):
     runner = web.AppRunner(app)
     await runner.setup()
 
-    site = web.TCPSite(runner, "54.151.125.63", 8082)
+    site = web.TCPSite(runner, "localhost", 8082)
     return site
 
 

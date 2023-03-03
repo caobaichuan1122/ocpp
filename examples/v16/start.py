@@ -38,7 +38,7 @@ async def remote_start_transaction(websocket, id_tag, connector_id=None, chargin
     return False
 
 async def main():
-    async with websockets.connect('ws://tpterp.com:9000/test', subprotocols=["ocpp1.6"]) as websocket:
+    async with websockets.connect('ws://tpterp.com:9000/TA2200001', subprotocols=["ocpp1.6"]) as websocket:
         id_tag = "2000202204111389"
         connector_id = 2
         charging_profile = [{
