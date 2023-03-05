@@ -1,8 +1,9 @@
+
+
 import asyncio
 import logging
-import pymysql
 import websockets
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 import random
 from functools import partial
 from aiohttp import web
@@ -11,51 +12,36 @@ from ocpp.routing import on
 from ocpp.v16 import ChargePoint as cp
 from ocpp.v16.enums import MessageTrigger, ChargingProfileKindType, \
     ChargingProfileStatus, ChargingRateUnitType, ClearChargingProfileStatus, \
-    ChargePointStatus,ChargingProfilePurposeType, Action, AuthorizationStatus, \
-    RemoteStartStopStatus,ReservationStatus,AvailabilityType,\
-    AvailabilityStatus,ConfigurationStatus,ClearCacheStatus
+    ChargePointStatus, ChargingProfilePurposeType, Action, AuthorizationStatus, \
+    RemoteStartStopStatus, ReservationStatus, AvailabilityType, \
+    AvailabilityStatus, ConfigurationStatus, ClearCacheStatus
 from enums import OcppMisc as oc
 from enums import ConfigurationKey as ck
-from ocpp.v16 import call_result,call
+from ocpp.v16 import call_result, call
 
-
-#
-db = pymysql.connect(host='49.176.154.111',
-                     user='root',
-                     password='Pass.crrc.2019',
-                     database='google')
-reserved_ID=[]
-current_connected_chargepoints={}
+reserved_ID = []
+current_connected_chargepoints = {}
 connected_chargepoint = []
-config_settings={"key":ck.authorize_remote_tx_requests, "readonly": True,"value":True}
+config_settings = {"key": ck.authorize_remote_tx_requests, "readonly": True, "value": True}
 logging.basicConfig(level=logging.INFO)
-
-
-
 
 
 class ChargePoint(cp):
 
     @on(Action.StatusNotification)
-    async def on_status(self,connector_id,error_code,status,**kwargs):
+    async def on_status(self, connector_id, error_code, status, **kwargs):
 
         print(status)
         return call_result.StatusNotificationPayload()
 
-
     @on(Action.MeterValues)
-    async def on_meter(self,meter_value,connector_id,**kwargs):
-        #save to DB
-        # c = db.cursor()
-        # sql = "INSERT INTO dict (dict) VALUES (%s)"
-        # c.execute(sql,str(meter_value))
-        print('----------------')
-        db.commit()
+    async def on_meter(self, meter_value, connector_id, **kwargs):
+        print(meter_value)
         return call_result.MeterValuesPayload()
 
     @on(Action.Authorize)
-    async def on_auth(self,id_tag,**kwargs):
-        if id_tag == '2000202204111389' or '4548fc69':
+    async def on_auth(self, id_tag, **kwargs):
+        if id_tag == "test_cp2" or id_tag == "test_cp5":
             print("authorized")
             return call_result.AuthorizePayload(
                 id_tag_info={oc.status.value: AuthorizationStatus.accepted.value}
@@ -67,7 +53,7 @@ class ChargePoint(cp):
             )
 
     @on(Action.BootNotification)
-    async def on_boot_notification(self, charge_point_model,charge_point_vendor, **kwargs):
+    async def on_boot_notification(self, charge_point_model, charge_point_vendor, **kwargs):
 
         return call_result.BootNotificationPayload(
             current_time=datetime.utcnow().isoformat(),
@@ -76,63 +62,58 @@ class ChargePoint(cp):
         )
 
     @on(Action.StartTransaction)
-    async def on_startTX(self, id_tag, connector_id, meter_start,timestamp, **kwargs):
+    async def on_startTX(self, id_tag, connector_id, meter_start, timestamp, **kwargs):
 
         print("session for user", id_tag)
         print("valid transaction for connector, ", connector_id)
         print("meter value at start of transaction ", meter_start)
         return call_result.StartTransactionPayload(
-        transaction_id=random.randint(122, 6666666666),
-        id_tag_info={oc.status.value: AuthorizationStatus.accepted.value},
-        # timestamp = datetime.now(timezone.utc).isoformat()
-            )
+            transaction_id=random.randint(122, 6666666666),
+            id_tag_info={oc.status.value: AuthorizationStatus.accepted.value}
+        )
 
+    # @on(Action.StartTransaction)
+    # async def on_startTX(self,id_tag,connector_id, meter_start, timestamp, reservation_id, **kwargs):
+    #   print("session for user", id_tag)
+    #  if reservation_id != 0:
 
-    #@on(Action.StartTransaction)
-    #async def on_startTX(self,id_tag,connector_id, meter_start, timestamp, reservation_id, **kwargs):
-     #   print("session for user", id_tag)
-      #  if reservation_id != 0:
+    #     if reservation_id in reserved_ID:
+    #        print("reservation ended for ,",reservation_id)
+    #       if id_tag == "test_cp2" or id_tag == "test_cp5":
+    #          print("valid transaction for connector, ", connector_id)
+    #         print("meter value at start of transaction ", meter_start)
+    #        return call_result.StartTransactionPayload(
+    #           transaction_id=random.randint(122, 6666666666),
+    #          id_tag_info={oc.status.value: AuthorizationStatus.accepted.value}
+    #     )
+    # else:
+    #   print("Not Authorized transaction")
+    #  return call_result.StartTransactionPayload(
+    #     transaction_id=0, id_tag_info={oc.status.value: AuthorizationStatus.invalid.value}
+    # )
+    # else:
+    #   print("error")
 
-       #     if reservation_id in reserved_ID:
-        #        print("reservation ended for ,",reservation_id)
-         #       if id_tag == "test_cp2" or id_tag == "test_cp5":
-          #          print("valid transaction for connector, ", connector_id)
-           #         print("meter value at start of transaction ", meter_start)
-            #        return call_result.StartTransactionPayload(
-             #           transaction_id=random.randint(122, 6666666666),
-              #          id_tag_info={oc.status.value: AuthorizationStatus.accepted.value}
-               #     )
-                #else:
-                 #   print("Not Authorized transaction")
-                  #  return call_result.StartTransactionPayload(
-                   #     transaction_id=0, id_tag_info={oc.status.value: AuthorizationStatus.invalid.value}
-                    #)
-            #else:
-             #   print("error")
+    # else:
 
-        #else:
-
-         #   if id_tag == "test_cp2" or id_tag == "test_cp5":
-          #      print("valid transaction for connector, ", connector_id)
-           #     print("meter value at start of transaction ", meter_start)
-            #    return call_result.StartTransactionPayload(
-             #       transaction_id=random.randint(122, 6666666666),
-              #      id_tag_info={oc.status.value: AuthorizationStatus.accepted.value}
-               # )
-            #else:
-             #   print("Not Authorized transaction")
-              #  return call_result.StartTransactionPayload(
-               #     transaction_id=0, id_tag_info={oc.status.value: AuthorizationStatus.invalid.value}
-                #)
-
-
+    #   if id_tag == "test_cp2" or id_tag == "test_cp5":
+    #      print("valid transaction for connector, ", connector_id)
+    #     print("meter value at start of transaction ", meter_start)
+    #    return call_result.StartTransactionPayload(
+    #       transaction_id=random.randint(122, 6666666666),
+    #      id_tag_info={oc.status.value: AuthorizationStatus.accepted.value}
+    # )
+    # else:
+    #   print("Not Authorized transaction")
+    #  return call_result.StartTransactionPayload(
+    #     transaction_id=0, id_tag_info={oc.status.value: AuthorizationStatus.invalid.value}
+    # )
 
     @on(Action.StopTransaction)
-    async def on_stopTX(self,meter_stop,timestamp,transaction_id, **kwargs):
-        print("Transaction stopped at value", meter_stop, " for transaction id", transaction_id,"at", timestamp)
+    async def on_stopTX(self, meter_stop, timestamp, transaction_id, **kwargs):
+        print("Transaction stopped at value", meter_stop, " for transaction id", transaction_id, "at", timestamp)
         return call_result.StopTransactionPayload(
-            transaction_id = transaction_id,
-            id_tag_info={oc.status.value: AuthorizationStatus.accepted.value}
+            None
         )
 
     @on(Action.Heartbeat)
@@ -141,24 +122,18 @@ class ChargePoint(cp):
         return call_result.HeartbeatPayload(current_time=datetime.utcnow().isoformat())
 
     async def UpdateFirmware(self):
-        abccc=datetime.today() + timedelta(days=2)
-        firm=call.UpdateFirmwarePayload(location="URL-FOR-FIRMWARE-DOWNLOAD", retrieve_date = datetime.utcfromtimestamp(1639056285).isoformat())
-        rrr=await self.call(firm)
+        abccc = datetime.today() + timedelta(days=2)
+        firm = call.UpdateFirmwarePayload(location="URL-FOR-FIRMWARE-DOWNLOAD",
+                                          retrieve_date=datetime.utcfromtimestamp(1639056285).isoformat())
+        rrr = await self.call(firm)
 
+    # async def remote_start_transaction(self, id_tag: str):
+    #     print(1)
+    #     return await self.call(call.RemoteStartTransactionPayload(id_tag='2000202204111389'))
 
     async def remote_start_transaction(self, id_tag: str):
-        print(0,id_tag)
-        return await self.call(call.RemoteStartTransactionPayload( id_tag=id_tag))
-
-    # 1438214900280  device id
-    async def remote_stop_transaction(self, transaction_id):
-        await asyncio.sleep(10)
-        request = call.RemoteStopTransactionPayload(
-            transaction_id=transaction_id
-        )
-        response = await self.call(request)
-        if response.status == RemoteStartStopStatus.accepted:
-            print("Transaction Stopped!!! remotely with authentication")
+        print(1)
+        return True
 
     async def setChargingProfile(self):
         req = call.SetChargingProfilePayload(
@@ -180,15 +155,24 @@ class ChargePoint(cp):
         if response.status == ChargingProfileStatus.accepted:
             print("Charge profile accepted")
 
+    # 1438214900280  device id
+
+    async def remote_stop_transaction(self):
+
+        await asyncio.sleep(10)
+        request = call.RemoteStopTransactionPayload(
+            transaction_id=11
+        )
+        response = await self.call(request)
+        if response.status == RemoteStartStopStatus.accepted:
+            print("Transaction Stopped!!! remotely with authentication")
 
     async def remote_trigger(self):
-        request = call.TriggerMessagePayload(requested_message= MessageTrigger.boot_notification, connector_id=1)
+        request = call.TriggerMessagePayload(requested_message=MessageTrigger.boot_notification, connector_id=1)
         response = await self.call(request)
 
-
-
     async def change_config(self):
-        request = call.ChangeConfigurationPayload(key="authorize_remote_tx_requests",value="True")
+        request = call.ChangeConfigurationPayload(key="authorize_remote_tx_requests", value="True")
         response = await self.call(request)
         if response.status == ConfigurationStatus.accepted:
             print("configuration change applied")
@@ -198,11 +182,8 @@ class ChargePoint(cp):
         else:
             print("change unsuccessful")
 
-
-
     async def clearcache(self):
         request = call.ClearCachePayload(
-
 
         )
         response = await self.call(request)
@@ -212,13 +193,13 @@ class ChargePoint(cp):
         if response.status == ClearCacheStatus.rejected:
             print("cache not cleared")
 
-
     async def reservenow(self):
 
-        reservation_id=1 # any id other than 0
+        reservation_id = 1  # any id other than 0
         reserved_ID.append(reservation_id)
         request = call.ReserveNowPayload(
-            connector_id=2,expiry_date=datetime.utcfromtimestamp(1639056288).isoformat(),id_tag="test_cp5",reservation_id=reservation_id
+            connector_id=2, expiry_date=datetime.utcfromtimestamp(1639056288).isoformat(), id_tag="test_cp5",
+            reservation_id=reservation_id
         )
         response = await self.call(request)
         if response.status == ReservationStatus.accepted:
@@ -229,7 +210,7 @@ class ChargePoint(cp):
 
     async def change_availability(self):
         request = call.ChangeAvailabilityPayload(
-            connector_id=1,type=AvailabilityType.operative
+            connector_id=1, type=AvailabilityType.inoperative
         )
         response = await self.call(request)
         if response.status == AvailabilityStatus.accepted:
@@ -253,7 +234,7 @@ class CentralSystem:
             """
         queue = asyncio.Queue(maxsize=1)
 
-            # Store a reference to the task so we can cancel it later if needed.
+        # Store a reference to the task so we can cancel it later if needed.
         task = asyncio.create_task(self.start_charger(cp, queue))
         self._chargers[cp] = task
         return queue
@@ -267,19 +248,12 @@ class CentralSystem:
         finally:
             # Make sure to remove referenc to charger after it disconnected.
             del self._chargers[cp]
-                # This will unblock the `on_connect()` handler and the connection                # will be destroyed.
+            # This will unblock the `on_connect()` handler and the connection                # will be destroyed.
             await queue.put(True)
 
     async def remote_start_transaction(self, id_tag: str):
         for cp, task in self._chargers.items():
-            print(cp, task)
-            if cp.id == '2000202204111389' or 'testCCSII30SCTEST':
-                print(1,cp.id,id_tag)
-                await cp.remote_start_transaction(id_tag)
-
-    async def remote_stop_transaction(self, id_tag: str):
-        for cp, task in self._chargers.items():
-            if cp.id == 'TA2200001' or 'testCCSII30SCTEST':
+            if cp.id == id_tag:
                 await cp.remote_start_transaction(id_tag)
 
 
@@ -287,36 +261,24 @@ async def remote_start(request):
     """ HTTP handler for remote starting a chargepoint. """
     data = await request.json()
     csms = request.app["csms"]
-    print(2,data,csms)
-    await csms.remote_start_transaction(data["id_tag"])
-
-    return web.Response()
-
-async def remote_stop(request):
-    """ HTTP handler for remote starting a chargepoint. """
-    data = await request.json()
-    csms = request.app["csms"]
-
-    await csms.remote_stop_transaction(data["id_tag"])
+    print(type(data["id_tag"]))
+    # await csms.remote_start_transaction(data["id_tag"])
+    await csms.register_charger('TA2200001')
 
     return web.Response()
 
 
-
-
-
-
-
-async def on_connect(websocket, path,csms):
+async def on_connect(websocket, path, csms):
     """ For every new charge point that connects, create a ChargePoint
     instance and start listening for messages.
     """
+    print(connected_chargepoint)
     try:
         requested_protocols = websocket.request_headers[
             'Sec-WebSocket-Protocol']
     except KeyError:
         logging.info("Client hasn't requested any Subprotocol. "
-                 "Closing Connection")
+                     "Closing Connection")
     if websocket.subprotocol:
         print(path)
         print(websocket)
@@ -331,36 +293,37 @@ async def on_connect(websocket, path,csms):
                         websocket.available_subprotocols,
                         requested_protocols)
 
-
         return await websocket.close()
 
     charge_point_id = path.strip('/')
-    print(charge_point_id)
     try:
-        #for change_Availablity
-        if charge_point_id =='TA2200001' or 'testCCSII30SCTEST':
+        # for change_Availablity
+        if charge_point_id == 'TA2200001':
+
             current_connected_chargepoints[path] = websocket
+
             connected_chargepoint.append(charge_point_id)
             print("Valid Chargepoint")
             cp = ChargePoint(charge_point_id, websocket)
             print(current_connected_chargepoints)
 
-            await asyncio.gather(cp.start(),cp.change_availability())
+            await asyncio.gather(cp.start(), cp.change_availability())
 
         # for remote start
-        elif charge_point_id == 'TA2200001' or 'testCCSII30SCTEST':
+        elif charge_point_id == 'TA2200001':
             current_connected_chargepoints[path] = websocket
             connected_chargepoint.append(charge_point_id)
             print("Valid Chargepoint")
             print(current_connected_chargepoints)
             cp = ChargePoint(charge_point_id, websocket)
 
-            await asyncio.gather(cp.start(),cp.change_config(),cp.remote_start_transaction(), cp.remote_stop_transaction())
+            await asyncio.gather(cp.start(), cp.change_config(), cp.remote_start_transaction(),
+                                 cp.remote_stop_transaction())
 
 
 
 
-        elif charge_point_id == 'TA2200001' or 'testCCSII30SCTEST':
+        elif charge_point_id == 'TA2200001':
 
             print("Valid Chargepoint")
 
@@ -371,7 +334,7 @@ async def on_connect(websocket, path,csms):
             await queue.get()
 
         # for start transaction
-        elif charge_point_id == 'TA2200001' or 'testCCSII30SCTEST':
+        elif charge_point_id == 'TA2200001':
             current_connected_chargepoints[path] = websocket
             print("Valid Chargepoint")
             print(current_connected_chargepoints)
@@ -383,7 +346,7 @@ async def on_connect(websocket, path,csms):
 
 
         # for reserve
-        elif charge_point_id == 'TA2200001' or 'testCCSII30SCTEST':
+        elif charge_point_id == 'TA2200001':
             current_connected_chargepoints[path] = websocket
 
             connected_chargepoint.append(charge_point_id)
@@ -391,7 +354,7 @@ async def on_connect(websocket, path,csms):
             print(current_connected_chargepoints)
             cp = ChargePoint(charge_point_id, websocket)
 
-            await asyncio.gather(cp.start(),cp.reservenow())
+            await asyncio.gather(cp.start(), cp.reservenow())
 
 
         else:
@@ -401,44 +364,15 @@ async def on_connect(websocket, path,csms):
     except:
         pass
 
-# async def on_connect(websocket, path):
-#     """ For every new charge point that connects, create a ChargePoint
-#     instance and start listening for messages.
-#     """
-#     try:
-#         requested_protocols = websocket.request_headers[
-#             'Sec-WebSocket-Protocol']
-#     except KeyError:
-#         logging.error(
-#             "Client hasn't requested any Subprotocol. Closing Connection"
-#         )
-#         return await websocket.close()
-#     if websocket.subprotocol:
-#         logging.info("Protocols Matched: %s", websocket.subprotocol)
-#     else:
-#         # In the websockets lib if no subprotocols are supported by the
-#         # client and the server, it proceeds without a subprotocol,
-#         # so we have to manually close the connection.
-#         logging.warning('Protocols Mismatched | Expected Subprotocols: %s,'
-#                         ' but client supports  %s | Closing connection',
-#                         websocket.available_subprotocols,
-#                         requested_protocols)
-#         return await websocket.close()
-#
-#     charge_point_id = path.strip('/')
-#     cp = ChargePoint(charge_point_id, websocket)
-#     await cp.start()
-
 
 async def create_websocket_server(csms: CentralSystem):
     handler = partial(on_connect, csms=csms)
     return await websockets.serve(handler, "0.0.0.0", 9000, subprotocols=["ocpp1.6"])
 
-async def create_http_server(csms: CentralSystem):
 
+async def create_http_server(csms: CentralSystem):
     app = web.Application()
     app.add_routes([web.post("/remote_start", remote_start)])
-    app.add_routes([web.post("/remote_stop", remote_stop)])
 
     # Put CSMS in app so it can be accessed from request handlers.
     # https://docs.aiohttp.org/en/stable/faq.html#where-do-i-put-my-database-connection-so-handlers-can-access-it
@@ -453,13 +387,13 @@ async def create_http_server(csms: CentralSystem):
 
 
 async def main():
-
     csms = CentralSystem()
     logging.info("WebSocket Server Started")
     websocket_server = await create_websocket_server(csms)
     http_server = await create_http_server(csms)
 
     await asyncio.wait([asyncio.create_task(websocket_server.wait_closed()), asyncio.create_task(http_server.start())])
+
 
 if __name__ == '__main__':
     asyncio.run(main())
