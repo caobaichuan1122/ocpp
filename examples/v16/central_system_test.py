@@ -20,10 +20,10 @@ from ocpp.v16 import call_result,call
 
 
 #
-db = pymysql.connect(host='49.176.154.111',
-                     user='root',
-                     password='Pass.crrc.2019',
-                     database='google')
+# db = pymysql.connect(host='49.176.154.111',
+#                      user='root',
+#                      password='Pass.crrc.2019',
+#                      database='google')
 reserved_ID=[]
 current_connected_chargepoints={}
 connected_chargepoint = []
@@ -50,7 +50,7 @@ class ChargePoint(cp):
         # sql = "INSERT INTO dict (dict) VALUES (%s)"
         # c.execute(sql,str(meter_value))
         print('----------------')
-        db.commit()
+        # db.commit()
         return call_result.MeterValuesPayload()
 
     @on(Action.Authorize)
@@ -131,8 +131,7 @@ class ChargePoint(cp):
     async def on_stopTX(self,meter_stop,timestamp,transaction_id, **kwargs):
         print("Transaction stopped at value", meter_stop, " for transaction id", transaction_id,"at", timestamp)
         return call_result.StopTransactionPayload(
-            transaction_id = transaction_id,
-            id_tag_info={oc.status.value: AuthorizationStatus.accepted.value}
+                None
         )
 
     @on(Action.Heartbeat)
@@ -147,7 +146,6 @@ class ChargePoint(cp):
 
 
     async def remote_start_transaction(self, id_tag: str):
-        print(0,id_tag)
         return await self.call(call.RemoteStartTransactionPayload( id_tag=id_tag))
 
     # 1438214900280  device id
@@ -271,11 +269,12 @@ class CentralSystem:
             await queue.put(True)
 
     async def remote_start_transaction(self, id_tag: str):
-        for cp, task in self._chargers.items():
-            print(cp, task)
-            if cp.id == '2000202204111389' or 'testCCSII30SCTEST':
-                print(1,cp.id,id_tag)
-                await cp.remote_start_transaction(id_tag)
+        print(self._chargers)
+        # for cp, task in self._chargers.items():
+        #     print(cp, task)
+        #     if cp.id == '2000202204111389' or 'testCCSII30SCTEST':
+        #         print(1,cp.id,id_tag)
+        #         await cp.remote_start_transaction(id_tag)
 
     async def remote_stop_transaction(self, id_tag: str):
         for cp, task in self._chargers.items():
@@ -287,7 +286,7 @@ async def remote_start(request):
     """ HTTP handler for remote starting a chargepoint. """
     data = await request.json()
     csms = request.app["csms"]
-    print(2,data,csms)
+    print(2,data,csms.remote_start_transaction)
     await csms.remote_start_transaction(data["id_tag"])
 
     return web.Response()
@@ -335,7 +334,8 @@ async def on_connect(websocket, path,csms):
         return await websocket.close()
 
     charge_point_id = path.strip('/')
-    print(charge_point_id)
+    print(123,charge_point_id)
+    # print(123,f"Charger {charge_point_id.id} connected.")
     try:
         #for change_Availablity
         if charge_point_id =='TA2200001' or 'testCCSII30SCTEST':
@@ -354,7 +354,7 @@ async def on_connect(websocket, path,csms):
             print("Valid Chargepoint")
             print(current_connected_chargepoints)
             cp = ChargePoint(charge_point_id, websocket)
-
+            print(234, charge_point_id)
             await asyncio.gather(cp.start(),cp.change_config(),cp.remote_start_transaction(), cp.remote_stop_transaction())
 
 
@@ -438,7 +438,7 @@ async def create_http_server(csms: CentralSystem):
 
     app = web.Application()
     app.add_routes([web.post("/remote_start", remote_start)])
-    app.add_routes([web.post("/remote_stop", remote_stop)])
+    # app.add_routes([web.get("/remote_start", remote_start)])
 
     # Put CSMS in app so it can be accessed from request handlers.
     # https://docs.aiohttp.org/en/stable/faq.html#where-do-i-put-my-database-connection-so-handlers-can-access-it
@@ -458,7 +458,6 @@ async def main():
     logging.info("WebSocket Server Started")
     websocket_server = await create_websocket_server(csms)
     http_server = await create_http_server(csms)
-
     await asyncio.wait([asyncio.create_task(websocket_server.wait_closed()), asyncio.create_task(http_server.start())])
 
 if __name__ == '__main__':
