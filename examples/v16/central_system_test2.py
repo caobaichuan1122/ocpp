@@ -262,8 +262,9 @@ async def remote_start(request):
     data = await request.json()
     csms = request.app["csms"]
     print(type(data["id_tag"]))
-    # await csms.remote_start_transaction(data["id_tag"])
     await csms.register_charger('TA2200001')
+    await csms.remote_start_transaction(data["id_tag"])
+    # await csms.register_charger('TA2200001')
 
     return web.Response()
 
