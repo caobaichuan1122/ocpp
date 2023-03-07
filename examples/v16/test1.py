@@ -51,7 +51,7 @@ from datetime import datetime, timezone
 
 
 async def send_call():
-    async with websockets.connect('ws://meloongtech.com:9000/TA2200001', subprotocols=["ocpp1.6"]) as websocket:
+    async with websockets.connect('ws://tpterp.com:9000/testCCSII30SCTEST', subprotocols=["ocpp1.6"]) as websocket:
 
         # request = [2,'','StopTransaction',{
         #     # 'connectorId':1,
@@ -69,7 +69,8 @@ async def send_call():
         #     'status':'Charging'
         # }]
         request2 = [2,'TA2200001','RemoteStartTransaction',{
-            "idTag":"2000202204111389"
+            # 'connectorId':1,
+            "idTag":"TA2200001"
             }]
 
         # call.RemoteStartTransactionPayload(id_tag='2000202204111389')

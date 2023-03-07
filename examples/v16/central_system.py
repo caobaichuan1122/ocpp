@@ -140,7 +140,7 @@ class ChargePoint(cp):
     #     return remotestarttransaction
     @on(Action.RemoteStartTransaction)
     async def remote_start_transaction(self, id_tag: str):
-        return await self.call(call.RemoteStartTransactionPayload( id_tag='2000202204111389'))
+        return await self.call(call.RemoteStartTransactionPayload( id_tag=id_tag))
 
     @on(Action.RemoteStopTransaction)
     def on_remote_stop_transaction(self,id_tag: str, **kwargs):
@@ -197,7 +197,7 @@ async def on_connect(websocket, path):
 
     charge_point_id = path.strip('/')
     cp = ChargePoint(charge_point_id, websocket)
-    await cp.start()
+    await asyncio.gather(cp.start(), cp.on_get_configuration(), cp.remote_start_transaction())
 
 
 

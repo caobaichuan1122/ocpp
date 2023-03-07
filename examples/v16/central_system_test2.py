@@ -132,8 +132,7 @@ class ChargePoint(cp):
     #     return await self.call(call.RemoteStartTransactionPayload(id_tag='2000202204111389'))
 
     async def remote_start_transaction(self, id_tag: str):
-        print(1)
-        return True
+        return await self.call(call.RemoteStartTransactionPayload( id_tag=id_tag))
 
     async def setChargingProfile(self):
         req = call.SetChargingProfilePayload(
@@ -299,7 +298,7 @@ async def on_connect(websocket, path, csms):
     charge_point_id = path.strip('/')
     try:
         # for change_Availablity
-        if charge_point_id == 'TA2200001':
+        if charge_point_id == 'test':
 
             current_connected_chargepoints[path] = websocket
 
