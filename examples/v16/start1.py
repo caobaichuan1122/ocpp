@@ -24,7 +24,7 @@ from ocpp.v16.enums import Action, AuthorizationStatus, RemoteStartStopStatus, C
     UnitOfMeasure
 from ocpp.v16 import call_result
 from enums import ConfigurationKey as ck
-from central_system_test import CentralSystem,ChargePoint
+from central_system_DC import CentralSystem,ChargePoint
 # class ChargePoint(cp):
 #     async def send_heartbeat(self):
 #         req = call.HeartbeatPayload()
