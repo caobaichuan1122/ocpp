@@ -271,7 +271,7 @@ class CentralSystem:
         print(id_tag)
         for cp, task in self._chargers.items():
             print(cp, task)
-            if cp.id == '2000202204111389' or 'testCCSII30SCTEST':
+            if cp.id == 'TA2200001' or 'testCCSII30SCTEST':
                 print(1,cp.id,id_tag)
         await cp.remote_start_transaction(id_tag)
 
