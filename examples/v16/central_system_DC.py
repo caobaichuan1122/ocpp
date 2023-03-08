@@ -145,7 +145,7 @@ class ChargePoint(cp):
         rrr=await self.call(firm)
 
     async def remote_start_transaction(self):
-        return await self.call(call.RemoteStartTransactionPayload(connector_id=1, id_tag='testCCSII30SCTEST'))
+        return await self.call(call.RemoteStartTransactionPayload(connector_id=1))
 
     #device id
     async def remote_stop_transaction(self, transaction_id):
