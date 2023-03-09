@@ -5,6 +5,10 @@ import json
 # print(response.text)
 
 
-data = {"id_tag":'testCCSII30SCTEST'}
-response = requests.post('http://tpterp.com:8082/remote_start', data=json.dumps(data))
+# data = {"id_tag":'testCCSII30SCTEST'}
+# response = requests.post('http://tpterp.com:8082/remote_start', data=json.dumps(data))
+# print(response.content)
+
+data = {"transaction_id":'testCCSII30SCTEST'}
+response = requests.post('http://tpterp.com:8082/remote_stop', data=json.dumps(data))
 print(response.content)

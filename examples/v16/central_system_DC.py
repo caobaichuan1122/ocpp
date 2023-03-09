@@ -146,8 +146,8 @@ class ChargePoint(cp):
         firm=call.UpdateFirmwarePayload(location="URL-FOR-FIRMWARE-DOWNLOAD", retrieve_date = datetime.utcfromtimestamp(1639056285).isoformat())
         rrr=await self.call(firm)
 
-    async def remote_start_transaction(self,id_tag:str):
-        return await self.call(call.RemoteStartTransactionPayload(connector_id=1,id_tag = id_tag))
+    async def remote_start_transaction(self):
+        return await self.call(call.RemoteStartTransactionPayload(connector_id=1,id_tag = 'testCCSII30SCTEST'))
 
 
     #device id
