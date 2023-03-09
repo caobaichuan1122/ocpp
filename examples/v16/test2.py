@@ -5,6 +5,6 @@ import json
 # print(response.text)
 
 
-data = {"id_tag":'2000202204111389'}
+data = {"id_tag":'testCCSII30SCTEST'}
 response = requests.post('http://tpterp.com:8082/remote_start', data=json.dumps(data))
 print(response.content)
