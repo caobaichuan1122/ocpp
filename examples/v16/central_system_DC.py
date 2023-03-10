@@ -344,7 +344,7 @@ async def on_connect(websocket, path,csms):
     # print(123,f"Charger {charge_point_id.id} connected.")
     try:
         #for change_Availablity
-        if  charge_point_id == 'TA2200001' :
+        if  charge_point_id == 'MT0009400' or charge_point_id == 'MT0009120' :
             current_connected_chargepoints[path] = websocket
             connected_chargepoint.append(charge_point_id)
             print("1,Valid Chargepoint",charge_point_id)
