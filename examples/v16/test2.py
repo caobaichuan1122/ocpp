@@ -9,6 +9,11 @@ import json
 # response = requests.post('http://tpterp.com:8082/remote_start', data=json.dumps(data))
 # print(response.content)
 
-data = {"transaction_id":'89660'}
-response = requests.post('http://tpterp.com:8082/remote_stop', data=json.dumps(data))
+# data = {"transaction_id":'89660'}
+# response = requests.post('http://tpterp.com:8082/remote_stop', data=json.dumps(data))
+# print(response.content)
+
+#get transaction id
+# data = {"transaction_id":'89660'}
+response = requests.get('http://tpterp.com:8082/remote_stop')
 print(response.content)

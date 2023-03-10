@@ -151,10 +151,11 @@ class ChargePoint(cp):
 
 
     #device id
-    async def remote_stop_transaction(self, transaction_id):
+    async def remote_stop_transaction(self):
+        # return await self.call(call.RemoteStartTransactionPayload(transaction_id=89660))
         await asyncio.sleep(10)
         request = call.RemoteStopTransactionPayload(
-            transaction_id=transaction_id
+            transaction_id=89660
         )
         response = await self.call(request)
         if response.status == RemoteStartStopStatus.accepted:
@@ -364,7 +365,8 @@ async def on_connect(websocket, path,csms):
             print(current_connected_chargepoints)
             cp = ChargePoint(charge_point_id, websocket)
             print(234, charge_point_id)
-            await asyncio.gather(cp.start(), cp.change_config(), cp.remote_start_transaction())
+            # await asyncio.gather(cp.start(), cp.change_config(), cp.remote_start_transaction())
+            await asyncio.gather(cp.start(), cp.change_config(), cp.remote_stop_transaction())
 
 
 
