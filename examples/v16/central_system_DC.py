@@ -147,7 +147,7 @@ class ChargePoint(cp):
         rrr=await self.call(firm)
 
     async def remote_start_transaction(self):
-        return await self.call(call.RemoteStartTransactionPayload(connector_id=1,id_tag = 'testCCSII30SCTEST'))
+        return await self.call(call.RemoteStartTransactionPayload(connector_id=1,id_tag = 'MT0009'))
 
 
     #device id
@@ -274,14 +274,14 @@ class CentralSystem:
         print('test',id_tag)
         for cp, task in self._chargers.items():
             print(cp, task)
-            if cp.id == 'TA2200001' or 'testCCSII30SCTEST':
+            if cp.id == 'TA2200001' or 'MT0009':
                 print(1,cp.id,id_tag)
         await cp.remote_start_transaction(id_tag)
 
 
     async def remote_stop_transaction(self, transaction_id: str):
         for cp, task in self._chargers.items():
-            if cp.id == 'TA2200001' or 'testCCSII30SCTEST':
+            if cp.id == 'TA2200001' or 'MT0009':
                 await cp.remote_start_transaction(transaction_id)
 
 
@@ -342,7 +342,7 @@ async def on_connect(websocket, path,csms):
     # print(123,f"Charger {charge_point_id.id} connected.")
     try:
         #for change_Availablity
-        if  charge_point_id == 'TA2200001':
+        if  charge_point_id == 'TA2200001' :
             current_connected_chargepoints[path] = websocket
             connected_chargepoint.append(charge_point_id)
             print("1,Valid Chargepoint",charge_point_id)
@@ -357,14 +357,14 @@ async def on_connect(websocket, path,csms):
             #                      cp.remote_stop_transaction())
 
         # for remote start
-        elif charge_point_id == 'testCCSII30SCTEST':
+        elif charge_point_id == 'MT0009':
             current_connected_chargepoints[path] = websocket
             connected_chargepoint.append(charge_point_id)
             print(2,"Valid Chargepoint")
             print(current_connected_chargepoints)
             cp = ChargePoint(charge_point_id, websocket)
             print(234, charge_point_id)
-            await asyncio.gather(cp.start(), cp.change_config(), cp.remote_start_transaction(), cp.remote_stop_transaction())
+            await asyncio.gather(cp.start(), cp.change_config(), cp.remote_start_transaction())
 
 
 
