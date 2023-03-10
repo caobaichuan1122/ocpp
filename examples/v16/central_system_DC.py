@@ -147,7 +147,7 @@ class ChargePoint(cp):
         rrr=await self.call(firm)
 
     async def remote_start_transaction(self):
-        return await self.call(call.RemoteStartTransactionPayload(connector_id=1,id_tag = 'MT0009'))
+        return await self.call(call.RemoteStartTransactionPayload(connector_id=1,id_tag = 'TA2200001'))
 
 
     #device id
@@ -155,7 +155,8 @@ class ChargePoint(cp):
         # return await self.call(call.RemoteStartTransactionPayload(transaction_id=89660))
         await asyncio.sleep(10)
         request = call.RemoteStopTransactionPayload(
-            transaction_id=89660
+
+            transaction_id=765834401
         )
         response = await self.call(request)
         if response.status == RemoteStartStopStatus.accepted:
@@ -358,15 +359,15 @@ async def on_connect(websocket, path,csms):
             #                      cp.remote_stop_transaction())
 
         # for remote start
-        elif charge_point_id == 'MT0009':
+        elif charge_point_id == 'MT0009' or charge_point_id == 'TA2200001':
             current_connected_chargepoints[path] = websocket
             connected_chargepoint.append(charge_point_id)
             print(2,"Valid Chargepoint")
             print(current_connected_chargepoints)
             cp = ChargePoint(charge_point_id, websocket)
             print(234, charge_point_id)
-            # await asyncio.gather(cp.start(), cp.change_config(), cp.remote_start_transaction())
-            await asyncio.gather(cp.start(), cp.change_config(), cp.remote_stop_transaction())
+            await asyncio.gather(cp.start(), cp.change_config(), cp.remote_start_transaction())
+            #await asyncio.gather(cp.start(), cp.change_config(), cp.remote_stop_transaction())
 
 
 

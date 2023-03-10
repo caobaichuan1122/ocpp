@@ -50,6 +50,8 @@ class ChargePoint(cp):
         # sql = "INSERT INTO dict (dict) VALUES (%s)"
         # c.execute(sql,str(meter_value))
         print('----------------')
+        print(meter_value)
+        print('----------------')
         # db.commit()
         return call_result.MeterValuesPayload()
 
@@ -145,13 +147,16 @@ class ChargePoint(cp):
         rrr=await self.call(firm)
 
     async def remote_start_transaction(self):
-        return await self.call(call.RemoteStartTransactionPayload(connector_id=1, id_tag='TA2200001'))
+        return await self.call(call.RemoteStartTransactionPayload(connector_id=1,id_tag = 'TA2200001'))
+
 
     #device id
-    async def remote_stop_transaction(self, transaction_id):
+    async def remote_stop_transaction(self):
+        # return await self.call(call.RemoteStartTransactionPayload(transaction_id=89660))
         await asyncio.sleep(10)
         request = call.RemoteStopTransactionPayload(
-            transaction_id=transaction_id
+
+            transaction_id=765834401
         )
         response = await self.call(request)
         if response.status == RemoteStartStopStatus.accepted:
@@ -268,18 +273,18 @@ class CentralSystem:
             await queue.put(True)
 
     async def remote_start_transaction(self, id_tag: str):
-        print(id_tag)
+        print('test',id_tag)
         for cp, task in self._chargers.items():
             print(cp, task)
-            if cp.id == 'TA2200001' or 'testCCSII30SCTEST':
+            if cp.id == 'TA2200001' or 'MT0009':
                 print(1,cp.id,id_tag)
         await cp.remote_start_transaction(id_tag)
 
 
-    async def remote_stop_transaction(self, id_tag: str):
+    async def remote_stop_transaction(self, transaction_id: str):
         for cp, task in self._chargers.items():
-            if cp.id == 'TA2200001' or 'testCCSII30SCTEST':
-                await cp.remote_start_transaction('id_tag')
+            if cp.id == 'TA2200001' or 'MT0009':
+                await cp.remote_start_transaction(transaction_id)
 
 
 async def remote_start(request):
@@ -293,14 +298,14 @@ async def remote_start(request):
 
     return web.Response()
 
-# async def remote_stop(request):
-#     """ HTTP handler for remote starting a chargepoint. """
-#     data = await request.json()
-#     csms = request.app["csms"]
-#
-#     await csms.remote_stop_transaction(data["id_tag"])
-#
-#     return web.Response()
+async def remote_stop(request):
+    """ HTTP handler for remote starting a chargepoint. """
+    data = await request.json()
+    csms = request.app["csms"]
+
+    await csms.remote_stop_transaction(data["transaction_id"])
+
+    return web.Response()
 
 
 
@@ -339,7 +344,7 @@ async def on_connect(websocket, path,csms):
     # print(123,f"Charger {charge_point_id.id} connected.")
     try:
         #for change_Availablity
-        if  charge_point_id == 'testCCSII30SCTEST':
+        if  charge_point_id == 'TA2200001' :
             current_connected_chargepoints[path] = websocket
             connected_chargepoint.append(charge_point_id)
             print("1,Valid Chargepoint",charge_point_id)
@@ -349,7 +354,7 @@ async def on_connect(websocket, path,csms):
             print(2,current_connected_chargepoints)
             print('--------------------------------------------')
 
-            await asyncio.gather(cp.start(),cp.change_availability(), cp.remote_start_transaction())
+            await asyncio.gather(cp.start(),cp.change_availability(), cp.change_config())
             # await asyncio.gather(cp.start(), cp.change_config(), cp.remote_start_transaction(),
             #                      cp.remote_stop_transaction())
 
@@ -362,6 +367,7 @@ async def on_connect(websocket, path,csms):
             cp = ChargePoint(charge_point_id, websocket)
             print(234, charge_point_id)
             await asyncio.gather(cp.start(), cp.change_config(), cp.remote_start_transaction())
+            #await asyncio.gather(cp.start(), cp.change_config(), cp.remote_stop_transaction())
 
 
 
