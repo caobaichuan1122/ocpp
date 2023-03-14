@@ -20,10 +20,10 @@ from ocpp.v16 import call_result,call
 
 
 #
-# db = pymysql.connect(host='49.176.154.111',
-#                      user='root',
-#                      password='Pass.crrc.2019',
-#                      database='google')
+db = pymysql.connect(host='49.176.154.111',
+                     user='root',
+                     password='Pass.crrc.2019',
+                     database='google')
 reserved_ID=[]
 current_connected_chargepoints={}
 connected_chargepoint = []
@@ -36,6 +36,8 @@ logging.basicConfig(level=logging.INFO)
 
 class ChargePoint(cp):
 
+
+
     @on(Action.StatusNotification)
     async def on_status(self,connector_id,error_code,status,**kwargs):
 
@@ -46,9 +48,9 @@ class ChargePoint(cp):
     @on(Action.MeterValues)
     async def on_meter(self,meter_value,connector_id,**kwargs):
         #save to DB
-        # c = db.cursor()
-        # sql = "INSERT INTO dict (dict) VALUES (%s)"
-        # c.execute(sql,str(meter_value))
+        c = db.cursor()
+        sql = "INSERT INTO dict (dict) VALUES (%s)"
+        c.execute(sql,str(meter_value))
         print('----------------')
         print(meter_value)
         print('----------------')
@@ -146,8 +148,9 @@ class ChargePoint(cp):
         firm=call.UpdateFirmwarePayload(location="URL-FOR-FIRMWARE-DOWNLOAD", retrieve_date = datetime.utcfromtimestamp(1639056285).isoformat())
         rrr=await self.call(firm)
 
-    async def remote_start_transaction(self):
-        return await self.call(call.RemoteStartTransactionPayload(connector_id=1,id_tag = 'TA2200001'))
+
+    async def remote_start_transaction(self,id_tag:str):
+        return await self.call(call.RemoteStartTransactionPayload(connector_id = 1 , id_tag = id_tag))
 
 
     #device id
@@ -273,17 +276,17 @@ class CentralSystem:
             await queue.put(True)
 
     async def remote_start_transaction(self, id_tag: str):
-        print('test',id_tag)
+        print('test',id_tag,self._chargers)
         for cp, task in self._chargers.items():
             print(cp, task)
-            if cp.id == 'TA2200001' or 'MT0009':
+            if cp.id == 'MT0009120':
                 print(1,cp.id,id_tag)
-        await cp.remote_start_transaction(id_tag)
+                await cp.remote_start_transaction(id_tag)
 
 
     async def remote_stop_transaction(self, transaction_id: str):
         for cp, task in self._chargers.items():
-            if cp.id == 'TA2200001' or 'MT0009':
+            if cp.id == 'TA2200001' or 'MT0009120':
                 await cp.remote_start_transaction(transaction_id)
 
 
@@ -350,7 +353,7 @@ async def on_connect(websocket, path,csms):
             print("1,Valid Chargepoint",charge_point_id)
             cp = ChargePoint(charge_point_id, websocket)
             print('--------------------------------------------')
-            print('test',cp.id)
+            print(cp.id)
             print(2,current_connected_chargepoints)
             print('--------------------------------------------')
 
@@ -359,11 +362,11 @@ async def on_connect(websocket, path,csms):
             #                      cp.remote_stop_transaction())
 
         # for remote start
-        elif charge_point_id == 'MT0009' or charge_point_id == 'TA2200001':
+        elif charge_point_id == 'MT0009120' or charge_point_id == 'MT0009400':
             current_connected_chargepoints[path] = websocket
             connected_chargepoint.append(charge_point_id)
             print(2,"Valid Chargepoint")
-            print(current_connected_chargepoints)
+            print(connected_chargepoint)
             cp = ChargePoint(charge_point_id, websocket)
             print(234, charge_point_id)
             await asyncio.gather(cp.start(), cp.change_config(), cp.remote_start_transaction())

@@ -19,11 +19,11 @@ from enums import ConfigurationKey as ck
 from ocpp.v16 import call_result,call
 
 
-#
-# db = pymysql.connect(host='49.176.154.111',
-#                      user='root',
-#                      password='Pass.crrc.2019',
-#                      database='google')
+
+db = pymysql.connect(host='49.176.154.111',
+                     user='root',
+                     password='Pass.crrc.2019',
+                     database='google')
 reserved_ID=[]
 current_connected_chargepoints={}
 connected_chargepoint = []
@@ -46,13 +46,13 @@ class ChargePoint(cp):
     @on(Action.MeterValues)
     async def on_meter(self,meter_value,connector_id,**kwargs):
         #save to DB
-        # c = db.cursor()
-        # sql = "INSERT INTO dict (dict) VALUES (%s)"
-        # c.execute(sql,str(meter_value))
+        c = db.cursor()
+        sql = "INSERT INTO dict (dict) VALUES (%s)"
+        c.execute(sql,str(meter_value))
         print('----------------')
         print(meter_value)
         print('----------------')
-        # db.commit()
+        db.commit()
         return call_result.MeterValuesPayload()
 
     @on(Action.Authorize)
@@ -156,7 +156,7 @@ class ChargePoint(cp):
         await asyncio.sleep(10)
         request = call.RemoteStopTransactionPayload(
 
-            transaction_id=765834401
+            transaction_id=-1814628127
         )
         response = await self.call(request)
         if response.status == RemoteStartStopStatus.accepted:
@@ -366,8 +366,8 @@ async def on_connect(websocket, path,csms):
             print(current_connected_chargepoints)
             cp = ChargePoint(charge_point_id, websocket)
             print(234, charge_point_id)
-            await asyncio.gather(cp.start(), cp.change_config(), cp.remote_start_transaction())
-            #await asyncio.gather(cp.start(), cp.change_config(), cp.remote_stop_transaction())
+            #await asyncio.gather(cp.start(), cp.change_config(), cp.remote_start_transaction())
+            await asyncio.gather(cp.start(), cp.change_config(), cp.remote_stop_transaction())
 
 
 

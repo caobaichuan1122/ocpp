@@ -7,7 +7,7 @@ import json
 
 #remote start charging point
 
-data = {"id_tag":'testCCSII30SCTEST'}
+data = {"id_tag":'MT0009120'}
 response = requests.post('http://tpterp.com:8082/remote_start', data=json.dumps(data))
 
 
