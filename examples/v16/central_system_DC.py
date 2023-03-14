@@ -19,7 +19,7 @@ from enums import ConfigurationKey as ck
 from ocpp.v16 import call_result,call
 
 
-#
+# connect to mysql
 db = pymysql.connect(host='49.176.154.111',
                      user='root',
                      password='Pass.crrc.2019',
@@ -154,12 +154,12 @@ class ChargePoint(cp):
 
 
     #device id
-    async def remote_stop_transaction(self):
+    async def remote_stop_transaction(self,transaction_id:str):
         # return await self.call(call.RemoteStartTransactionPayload(transaction_id=89660))
         await asyncio.sleep(10)
         request = call.RemoteStopTransactionPayload(
 
-            transaction_id=765834401
+            transaction_id = transaction_id
         )
         response = await self.call(request)
         if response.status == RemoteStartStopStatus.accepted:
@@ -276,9 +276,9 @@ class CentralSystem:
             await queue.put(True)
 
     async def remote_start_transaction(self, id_tag: str):
-        print('test',id_tag,self._chargers)
+        print('test', id_tag, self._chargers.items())
         for cp, task in self._chargers.items():
-            print(cp, task)
+            print(cp.id)
             if cp.id == 'MT0009120':
                 print(1,cp.id,id_tag)
                 await cp.remote_start_transaction(id_tag)
@@ -286,7 +286,7 @@ class CentralSystem:
 
     async def remote_stop_transaction(self, transaction_id: str):
         for cp, task in self._chargers.items():
-            if cp.id == 'TA2200001' or 'MT0009120':
+            if cp.id == 'TA2200001' or cp.id == 'MT0009120':
                 await cp.remote_start_transaction(transaction_id)
 
 
@@ -296,7 +296,9 @@ async def remote_start(request):
     # async with websockets.connect('ws://tpterp.com:9000/TA2200001', subprotocols=["ocpp1.6"]) as websocket:
     #         cp = ChargePoint("TA2200001",websocket)
     csms = request.app["csms"]
-    # await csms.register_charger(cp)
+    print(current_connected_chargepoints.keys(),current_connected_chargepoints.values())
+    cp = ChargePoint(connected_chargepoint[0],current_connected_chargepoints.values())
+    csms.register_charger(cp)
     await csms.remote_start_transaction(data["id_tag"])
 
     return web.Response()
@@ -357,7 +359,7 @@ async def on_connect(websocket, path,csms):
             print(2,current_connected_chargepoints)
             print('--------------------------------------------')
 
-            await asyncio.gather(cp.start(),cp.change_availability(), cp.change_config())
+            await asyncio.gather(cp.start(),cp.change_availability())
             # await asyncio.gather(cp.start(), cp.change_config(), cp.remote_start_transaction(),
             #                      cp.remote_stop_transaction())
 
@@ -375,7 +377,7 @@ async def on_connect(websocket, path,csms):
 
 
 
-        elif charge_point_id == 'TA2200001':
+        elif charge_point_id == 'MT0009120':
 
             print("3,Valid Chargepoint")
 
@@ -386,7 +388,7 @@ async def on_connect(websocket, path,csms):
             await queue.get()
 
         # for start transaction
-        elif charge_point_id == 'TA2200001':
+        elif charge_point_id == 'MT0009120':
             current_connected_chargepoints[path] = websocket
             print("4,Valid Chargepoint")
             print(current_connected_chargepoints)
@@ -398,7 +400,7 @@ async def on_connect(websocket, path,csms):
 
 
         # for reserve
-        elif charge_point_id == 'TA2200001':
+        elif charge_point_id == 'MT0009120':
             current_connected_chargepoints[path] = websocket
 
             connected_chargepoint.append(charge_point_id)
@@ -453,7 +455,7 @@ async def create_http_server(csms: CentralSystem):
 
     app = web.Application()
     app.add_routes([web.post("/remote_start", remote_start)])
-    # app.add_routes([web.get("/remote_start", remote_start)])
+    app.add_routes([web.get("/remote_stop", remote_stop)])
 
     # Put CSMS in app so it can be accessed from request handlers.
     # https://docs.aiohttp.org/en/stable/faq.html#where-do-i-put-my-database-connection-so-handlers-can-access-it
